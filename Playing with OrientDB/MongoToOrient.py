@@ -83,7 +83,7 @@ def makeTitleEdges():
         client.command("CREATE EDGE SameMovie from (SELECT FROM ActorNode where movie = \"" + title + "\") TO ( SELECT FROM ActorNode where movie = \"" + title + "\") CONTENT { \"length\": 1}")
 
 
-def actorSet():
+def actorSetMONGO():
     
     outputList = []
 
@@ -103,7 +103,16 @@ def actorSet():
 
     return finalList
 
-def movieSet():
+def actorSetORIENT():
+    client.db_open("KevinBacon", "root", "tiger")
+    outputList = []
+    ans = client.query("select actor from ActorNode", 200000)
+    for item in ans:
+        outputList.append(item.oRecordData['actor'])
+    finalList = set(outputList)
+    return finalList
+
+def movieSetMONGO():
     
     outputList = []
 
@@ -122,4 +131,32 @@ def movieSet():
 
     return finalList
 
-makeTitleEdges()
+def actorCount(actor):
+    client.db_open("KevinBacon", "root", "tiger")
+
+    ans = client.query("select count(actor) from ActorNode where actor = \"" + actor + "\"")
+    for item in ans:
+        return int(item.oRecordData['count'])
+
+def actorDelete(actor):
+    client.db_open("KevinBacon", "root", "tiger")
+    client.command("delete vertex from ActorNode where actor = \"" + actor + "\"")
+    print("bam")
+
+def purgeDB():
+    actors = actorSetORIENT()
+    tot = len(actors)
+    iterator = 1
+
+    for actor in actors:
+        print(str(iterator) + "/" + str(tot))
+        iterator +=1
+        count = actorCount(actor)
+        if count < 5:
+            actorDelete(actor)
+    pass
+ 
+
+
+purgeDB()
+#makeTitleEdges()
