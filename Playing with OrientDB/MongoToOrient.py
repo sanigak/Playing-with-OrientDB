@@ -4,6 +4,7 @@ import pymongo
 #initializing Orient client
 client = pyorient.OrientDB("localhost", 2424)
 session_id = client.connect("root", "tiger")
+client.db_open("KevinBacon", "root", "tiger")
 
 #initializing Mongo client
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
@@ -69,8 +70,7 @@ def makeActorEdges():
 
 
 def makeTitleEdges():
-    client.db_open("KevinBacon", "root", "tiger")
-
+    
     allTitles = movieSet()
 
     iterator = 1
@@ -104,7 +104,7 @@ def actorSetMONGO():
     return finalList
 
 def actorSetORIENT():
-    client.db_open("KevinBacon", "root", "tiger")
+    
     outputList = []
     ans = client.query("select actor from ActorNode", 200000)
     for item in ans:
@@ -132,14 +132,14 @@ def movieSetMONGO():
     return finalList
 
 def actorCount(actor):
-    client.db_open("KevinBacon", "root", "tiger")
+    
 
     ans = client.query("select count(actor) from ActorNode where actor = \"" + actor + "\"")
     for item in ans:
         return int(item.oRecordData['count'])
 
 def actorDelete(actor):
-    client.db_open("KevinBacon", "root", "tiger")
+    
     client.command("delete vertex from ActorNode where actor = \"" + actor + "\"")
     print("bam")
 
