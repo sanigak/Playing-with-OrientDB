@@ -17,7 +17,6 @@ def makeVertices():
 
     all = col.find()
 
-    client.db_open("KevinBacon", "root", "tiger")
 
     for movie in all:
         cast = movie["cast"]
@@ -46,7 +45,6 @@ def makeVertices():
 
             
 
-
             try:
                  client.command("CREATE VERTEX ActorNode CONTENT { \"actor\" : \"" + member + "\", \"role\" : \"" + role + "\", \"movie\" : \"" + title + "\" }")
 
@@ -58,7 +56,7 @@ def makeVertices():
 def makeActorEdges():
     client.db_open("KevinBacon", "root", "tiger")
 
-    allActors = actorSet()
+    allActors = actorSetORIENT()
 
     iterator = 1
     total = len(allActors)
@@ -139,9 +137,14 @@ def actorCount(actor):
         return int(item.oRecordData['count'])
 
 def actorDelete(actor):
-    
-    client.command("delete vertex from ActorNode where actor = \"" + actor + "\"")
-    print("bam")
+    command = "delete vertex from ActorNode where actor = \"" + actor + "\""
+    print(command)
+    client.command(command)
+
+def movieDelete(movie):
+    command = "delete vertex from ActorNode where movie = \"" + movie + "\""
+    print(command)
+    client.command(command)
 
 def purgeDB():
     actors = actorSetORIENT()
@@ -156,7 +159,50 @@ def purgeDB():
             actorDelete(actor)
     pass
  
+def actorSetORIENTandCOUNT():
+    outputList = []
+    ans = client.query("select count(*), actor from ActorNode group by actor", 200000)
+    for item in ans:
+        count = item.oRecordData['count']
+        count = int(count)
+        if count < 5:
+            actor = item.oRecordData['actor']
+            actor = str(actor)
+            outputList.append(actor)
 
+    finalList = set(outputList)
+    return finalList
 
-purgeDB()
-#makeTitleEdges()
+def movieSetORIENTandCOUNT():
+    outputList = []
+    ans = client.query("select count(*), movie from ActorNode group by movie", 200000)
+    for item in ans:
+        count = item.oRecordData['count']
+        count = int(count)
+        if count < 2:
+            movie = item.oRecordData['movie']
+            movie = str(movie)
+            outputList.append(movie)
+
+    finalList = set(outputList)
+    return finalList
+
+def newActorPurge():
+    iterator = 1
+    listy = actorSetORIENTandCOUNT()
+    count = len(listy)
+    for actor in listy:
+        print(str(iterator) + "/" + str(count))
+        iterator+=1
+        actorDelete(actor)
+    
+def newMoviePurge():
+    iterator = 1
+    listy = movieSetORIENTandCOUNT()
+    count = len(listy)
+    for movie in listy:
+        print(str(iterator) + "/" + str(count))
+        iterator+=1
+        movieDelete(movie)
+
+newMoviePurge()
