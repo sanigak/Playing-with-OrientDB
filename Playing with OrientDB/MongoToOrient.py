@@ -4,7 +4,7 @@ import pymongo
 #initializing Orient client
 client = pyorient.OrientDB("localhost", 2424)
 session_id = client.connect("root", "tiger")
-client.db_open("KevinBacon", "root", "tiger")
+client.db_open("KevinBaconTEST", "root", "tiger")
 
 #initializing Mongo client
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
@@ -30,6 +30,10 @@ def makeVertices():
             title = title.strip("\\")
             title = title.strip(" ")
             title = title.replace("\"", "")
+            title = title.replace(" - IMDb", "")
+            title = title.replace(")", "")
+            title = title.replace("(", "- ")
+            
 
             role = str(cast[member])
             role = role.strip("\"")
@@ -54,7 +58,6 @@ def makeVertices():
     pass
 
 def makeActorEdges():
-    client.db_open("KevinBacon", "root", "tiger")
 
     allActors = actorSetORIENT()
 
@@ -69,7 +72,7 @@ def makeActorEdges():
 
 def makeTitleEdges():
     
-    allTitles = movieSet()
+    allTitles = movieSetORIENT()
 
     iterator = 1
 
@@ -127,6 +130,15 @@ def movieSetMONGO():
     
     finalList = set(outputList)
 
+    return finalList
+
+def movieSetORIENT():
+    
+    outputList = []
+    ans = client.query("select movie from ActorNode", 200000)
+    for item in ans:
+        outputList.append(item.oRecordData['movie'])
+    finalList = set(outputList)
     return finalList
 
 def actorCount(actor):
@@ -205,4 +217,8 @@ def newMoviePurge():
         iterator+=1
         movieDelete(movie)
 
-newMoviePurge()
+#newActorPurge()
+#newMoviePurge()
+
+#makeActorEdges()
+makeTitleEdges()
